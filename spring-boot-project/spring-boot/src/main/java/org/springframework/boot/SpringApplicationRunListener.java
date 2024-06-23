@@ -36,7 +36,7 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
  * @author Chris Bono
  * @since 1.0.0
  */
-public interface SpringApplicationRunListener {
+public interface SpringApplicationRunListener {// 定义了SpringBoot程序启动的5个阶段
 
 	/**
 	 * Called immediately when the run method has first started. Can be used for very

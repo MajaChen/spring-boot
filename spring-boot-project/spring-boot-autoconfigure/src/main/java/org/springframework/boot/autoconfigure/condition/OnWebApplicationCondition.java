@@ -42,7 +42,7 @@ import org.springframework.web.context.WebApplicationContext;
  * @see ConditionalOnNotWebApplication
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 20)
-class OnWebApplicationCondition extends FilteringSpringBootCondition {
+class OnWebApplicationCondition extends FilteringSpringBootCondition {// 检查给定的WebApplicationContext是否符合要求
 
 	private static final String SERVLET_WEB_APPLICATION_CLASS = "org.springframework.web.context.support.GenericWebApplicationContext";
 
@@ -50,24 +50,24 @@ class OnWebApplicationCondition extends FilteringSpringBootCondition {
 
 	@Override
 	protected ConditionOutcome[] getOutcomes(String[] autoConfigurationClasses,
-			AutoConfigurationMetadata autoConfigurationMetadata) {
+			AutoConfigurationMetadata autoConfigurationMetadata) {// 判断给定的autoConfigurationClasses是否满足条件 - 判断依据是web环境
 		ConditionOutcome[] outcomes = new ConditionOutcome[autoConfigurationClasses.length];
 		for (int i = 0; i < outcomes.length; i++) {
 			String autoConfigurationClass = autoConfigurationClasses[i];
 			if (autoConfigurationClass != null) {
 				outcomes[i] = getOutcome(
-						autoConfigurationMetadata.get(autoConfigurationClass, "ConditionalOnWebApplication"));
+						autoConfigurationMetadata.get(autoConfigurationClass, "ConditionalOnWebApplication"));// k是autoConfigurationClass.ConditionalOnWebApplication
 			}
 		}
 		return outcomes;
 	}
 
-	private ConditionOutcome getOutcome(String type) {
+	private ConditionOutcome getOutcome(String type) {// type是网络类型
 		if (type == null) {
 			return null;
 		}
 		ConditionMessage.Builder message = ConditionMessage.forCondition(ConditionalOnWebApplication.class);
-		if (ConditionalOnWebApplication.Type.SERVLET.name().equals(type)) {
+		if (ConditionalOnWebApplication.Type.SERVLET.name().equals(type)) {// 如果是servlet类型，则判断GenericWebApplicationContext是否存在于类路径下，不存在则完蛋
 			if (!ClassNameFilter.isPresent(SERVLET_WEB_APPLICATION_CLASS, getBeanClassLoader())) {
 				return ConditionOutcome.noMatch(message.didNotFind("servlet web application classes").atAll());
 			}
@@ -84,6 +84,11 @@ class OnWebApplicationCondition extends FilteringSpringBootCondition {
 		return null;
 	}
 
+	/*
+	 * 在加载BeanDefinition的时候再次判断给定的Bean是否符合条件
+	 * 对应的注解：ConditionalOnWebApplication
+	 * 判断规则是：当前的网络类型是否是注解期望的网络类型
+	 * */
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
 		boolean required = metadata.isAnnotated(ConditionalOnWebApplication.class.getName());

@@ -63,7 +63,7 @@ import org.springframework.context.annotation.Conditional;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Conditional(OnBeanCondition.class)
-public @interface ConditionalOnMissingBean {
+public @interface ConditionalOnMissingBean {// 要求指定的Bean不存在，指定条件见下
 
 	/**
 	 * The class types of beans that should be checked. The condition matches when no bean

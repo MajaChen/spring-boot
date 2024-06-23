@@ -44,12 +44,12 @@ abstract class FilteringSpringBootCondition extends SpringBootCondition
 	private ClassLoader beanClassLoader;
 
 	@Override
-	public boolean[] match(String[] autoConfigurationClasses, AutoConfigurationMetadata autoConfigurationMetadata) {
+	public boolean[] match(String[] autoConfigurationClasses, AutoConfigurationMetadata autoConfigurationMetadata) {// 判断给定的类是否满足条件，满足条件则加载，否则不加载
 		ConditionEvaluationReport report = ConditionEvaluationReport.find(this.beanFactory);
-		ConditionOutcome[] outcomes = getOutcomes(autoConfigurationClasses, autoConfigurationMetadata);
+		ConditionOutcome[] outcomes = getOutcomes(autoConfigurationClasses, autoConfigurationMetadata);// 被三个子类重写
 		boolean[] match = new boolean[outcomes.length];
 		for (int i = 0; i < outcomes.length; i++) {
-			match[i] = (outcomes[i] == null || outcomes[i].isMatch());
+			match[i] = (outcomes[i] == null || outcomes[i].isMatch());// 为null也算匹配
 			if (!match[i] && outcomes[i] != null) {
 				logOutcome(autoConfigurationClasses[i], outcomes[i]);
 				if (report != null) {
@@ -88,11 +88,11 @@ abstract class FilteringSpringBootCondition extends SpringBootCondition
 		}
 		List<String> matches = new ArrayList<>(classNames.size());
 		for (String candidate : classNames) {
-			if (classNameFilter.matches(candidate, classLoader)) {
+			if (classNameFilter.matches(candidate, classLoader)) {// 表示缺失了
 				matches.add(candidate);
 			}
 		}
-		return matches;
+		return matches;// 表示缺失的类
 	}
 
 	/**

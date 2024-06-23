@@ -117,6 +117,8 @@ public class AutoConfigureAnnotationProcessor extends AbstractProcessor {
 		}
 		if (roundEnv.processingOver()) {
 			try {
+
+
 				writeProperties();
 			}
 			catch (Exception ex) {

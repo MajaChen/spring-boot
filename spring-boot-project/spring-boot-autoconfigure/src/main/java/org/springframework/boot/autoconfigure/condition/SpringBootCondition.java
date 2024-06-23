@@ -41,10 +41,10 @@ public abstract class SpringBootCondition implements Condition {
 	private final Log logger = LogFactory.getLog(getClass());
 
 	@Override
-	public final boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+	public final boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {// 判断给定的metadata在给定的context下是否符合加载要求
 		String classOrMethodName = getClassOrMethodName(metadata);
 		try {
-			ConditionOutcome outcome = getMatchOutcome(context, metadata);
+			ConditionOutcome outcome = getMatchOutcome(context, metadata);// 委托给子类实现，OnBeanCondition、OnClassCondition、OnWebApplicationCondition
 			logOutcome(classOrMethodName, outcome);
 			recordEvaluation(context, classOrMethodName, outcome);
 			return outcome.isMatch();

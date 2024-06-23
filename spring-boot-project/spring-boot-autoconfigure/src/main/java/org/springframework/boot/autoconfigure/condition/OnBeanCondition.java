@@ -74,7 +74,7 @@ import org.springframework.util.StringUtils;
  * @see ConditionalOnSingleCandidate
  */
 @Order(Ordered.LOWEST_PRECEDENCE)
-class OnBeanCondition extends FilteringSpringBootCondition implements ConfigurationCondition {
+class OnBeanCondition extends FilteringSpringBootCondition implements ConfigurationCondition {// 检查给定的bean是否存在
 
 	@Override
 	public ConfigurationPhase getConfigurationPhase() {
@@ -83,14 +83,14 @@ class OnBeanCondition extends FilteringSpringBootCondition implements Configurat
 
 	@Override
 	protected final ConditionOutcome[] getOutcomes(String[] autoConfigurationClasses,
-			AutoConfigurationMetadata autoConfigurationMetadata) {
+			AutoConfigurationMetadata autoConfigurationMetadata) {// 核心点是autoConfigurationMetadata
 		ConditionOutcome[] outcomes = new ConditionOutcome[autoConfigurationClasses.length];
 		for (int i = 0; i < outcomes.length; i++) {
 			String autoConfigurationClass = autoConfigurationClasses[i];
-			if (autoConfigurationClass != null) {
-				Set<String> onBeanTypes = autoConfigurationMetadata.getSet(autoConfigurationClass, "ConditionalOnBean");
+			if (autoConfigurationClass != null) {// 为什么会是null？这个类可能已经被其他过滤器提前过滤掉了
+				Set<String> onBeanTypes = autoConfigurationMetadata.getSet(autoConfigurationClass, "ConditionalOnBean");// k是autoConfigurationClass.ConditionalOnBean
 				outcomes[i] = getOutcome(onBeanTypes, ConditionalOnBean.class);
-				if (outcomes[i] == null) {
+				if (outcomes[i] == null) {// 匹配，再检查ConditionalOnSingleCandidate
 					Set<String> onSingleCandidateTypes = autoConfigurationMetadata.getSet(autoConfigurationClass,
 							"ConditionalOnSingleCandidate");
 					outcomes[i] = getOutcome(onSingleCandidateTypes, ConditionalOnSingleCandidate.class);
@@ -100,33 +100,38 @@ class OnBeanCondition extends FilteringSpringBootCondition implements Configurat
 		return outcomes;
 	}
 
-	private ConditionOutcome getOutcome(Set<String> requiredBeanTypes, Class<? extends Annotation> annotation) {
-		List<String> missing = filter(requiredBeanTypes, ClassNameFilter.MISSING, getBeanClassLoader());
+	private ConditionOutcome getOutcome(Set<String> requiredBeanTypes, Class<? extends Annotation> annotation) {// 这里只检查requiredBeanTypes对应的类是否存在与类路径下，这并不符合语义
+		List<String> missing = filter(requiredBeanTypes, ClassNameFilter.MISSING, getBeanClassLoader());// 判断给定的requiredBeanTypes是否存在于类路径下，missing表示缺失的类
 		if (!missing.isEmpty()) {
 			ConditionMessage message = ConditionMessage.forCondition(annotation)
 				.didNotFind("required type", "required types")
 				.items(Style.QUOTE, missing);
-			return ConditionOutcome.noMatch(message);
+			return ConditionOutcome.noMatch(message);// 不匹配
 		}
-		return null;
+		return null;// 匹配
 	}
 
+	/*
+	* 在加载BeanDefinition的时候判断给定的metadata在给定的context下是否符合加载条件
+	* 对应的注解：ConditionalOnBean、ConditionalOnSingleCandidate、ConditionalOnMissingBean
+	* 判断规则：在IOC容器中存在/不存在给定的BeanDefinition
+	* */
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
 		ConditionMessage matchMessage = ConditionMessage.empty();
 		MergedAnnotations annotations = metadata.getAnnotations();
-		if (annotations.isPresent(ConditionalOnBean.class)) {
+		if (annotations.isPresent(ConditionalOnBean.class)) {// 判断ConditionalOnBean注解
 			Spec<ConditionalOnBean> spec = new Spec<>(context, metadata, annotations, ConditionalOnBean.class);
-			MatchResult matchResult = getMatchingBeans(context, spec);
-			if (!matchResult.isAllMatched()) {
+			MatchResult matchResult = getMatchingBeans(context, spec);// 从BeanFactory中寻找对应的Bean
+			if (!matchResult.isAllMatched()) {// 不匹配则直接返回
 				String reason = createOnBeanNoMatchReason(matchResult);
 				return ConditionOutcome.noMatch(spec.message().because(reason));
 			}
 			matchMessage = spec.message(matchMessage)
 				.found("bean", "beans")
-				.items(Style.QUOTE, matchResult.getNamesOfAllMatches());
+				.items(Style.QUOTE, matchResult.getNamesOfAllMatches());// 匹配则继续
 		}
-		if (metadata.isAnnotated(ConditionalOnSingleCandidate.class.getName())) {
+		if (metadata.isAnnotated(ConditionalOnSingleCandidate.class.getName())) {// 判断ConditionalOnSingleCandidate注解
 			Spec<ConditionalOnSingleCandidate> spec = new SingleCandidateSpec(context, metadata, annotations);
 			MatchResult matchResult = getMatchingBeans(context, spec);
 			if (!matchResult.isAllMatched()) {
@@ -152,7 +157,7 @@ class OnBeanCondition extends FilteringSpringBootCondition implements Configurat
 					.items(Style.QUOTE, allBeans);
 			}
 		}
-		if (metadata.isAnnotated(ConditionalOnMissingBean.class.getName())) {
+		if (metadata.isAnnotated(ConditionalOnMissingBean.class.getName())) {// 判断ConditionalOnMissingBean注解
 			Spec<ConditionalOnMissingBean> spec = new Spec<>(context, metadata, annotations,
 					ConditionalOnMissingBean.class);
 			MatchResult matchResult = getMatchingBeans(context, spec);
@@ -165,12 +170,12 @@ class OnBeanCondition extends FilteringSpringBootCondition implements Configurat
 		return ConditionOutcome.match(matchMessage);
 	}
 
-	protected final MatchResult getMatchingBeans(ConditionContext context, Spec<?> spec) {
+	protected final MatchResult getMatchingBeans(ConditionContext context, Spec<?> spec) {// 根据spec从context中寻找指定的Bean，暂时不下钻
 		ClassLoader classLoader = context.getClassLoader();
 		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
 		boolean considerHierarchy = spec.getStrategy() != SearchStrategy.CURRENT;
 		Set<Class<?>> parameterizedContainers = spec.getParameterizedContainers();
-		if (spec.getStrategy() == SearchStrategy.ANCESTORS) {
+		if (spec.getStrategy() == SearchStrategy.ANCESTORS) {// 去父级IOC容器中查找
 			BeanFactory parent = beanFactory.getParentBeanFactory();
 			Assert.isInstanceOf(ConfigurableListableBeanFactory.class, parent,
 					"Unable to use SearchStrategy.ANCESTORS");
@@ -214,7 +219,7 @@ class OnBeanCondition extends FilteringSpringBootCondition implements Configurat
 	}
 
 	private Set<String> getNamesOfBeansIgnoredByType(ClassLoader classLoader, ListableBeanFactory beanFactory,
-			boolean considerHierarchy, Set<String> ignoredTypes, Set<Class<?>> parameterizedContainers) {
+			boolean considerHierarchy, Set<String> ignoredTypes, Set<Class<?>> parameterizedContainers) {// 根据名称查找Bean，忽略类型
 		Set<String> result = null;
 		for (String ignoredType : ignoredTypes) {
 			Collection<String> ignoredNames = getBeanNamesForType(classLoader, considerHierarchy, beanFactory,
@@ -225,7 +230,7 @@ class OnBeanCondition extends FilteringSpringBootCondition implements Configurat
 	}
 
 	private Set<String> getBeanNamesForType(ClassLoader classLoader, boolean considerHierarchy,
-			ListableBeanFactory beanFactory, String type, Set<Class<?>> parameterizedContainers) throws LinkageError {
+			ListableBeanFactory beanFactory, String type, Set<Class<?>> parameterizedContainers) throws LinkageError {// 给定类型，查找Bean名称
 		try {
 			return getBeanNamesForType(beanFactory, considerHierarchy, resolve(type, classLoader),
 					parameterizedContainers);

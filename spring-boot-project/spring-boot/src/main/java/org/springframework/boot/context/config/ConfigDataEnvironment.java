@@ -222,22 +222,22 @@ class ConfigDataEnvironment {
 	 * Process all contributions and apply any newly imported property sources to the
 	 * {@link Environment}.
 	 */
-	void processAndApply() {
+	void processAndApply() {// 读取配置文件属性并将其加入environment
 		ConfigDataImporter importer = new ConfigDataImporter(this.logFactory, this.notFoundAction, this.resolvers,
 				this.loaders);
 		registerBootstrapBinder(this.contributors, null, DENY_INACTIVE_BINDING);
 		ConfigDataEnvironmentContributors contributors = processInitial(this.contributors, importer);
 		ConfigDataActivationContext activationContext = createActivationContext(
 				contributors.getBinder(null, BinderOption.FAIL_ON_BIND_TO_INACTIVE_SOURCE));
-		contributors = processWithoutProfiles(contributors, importer, activationContext);
+		contributors = processWithoutProfiles(contributors, importer, activationContext);// 带profile读取配置文件，没有解析过程
 		activationContext = withProfiles(contributors, activationContext);
-		contributors = processWithProfiles(contributors, importer, activationContext);
+		contributors = processWithProfiles(contributors, importer, activationContext);// 不带profile读取配置文件
 		applyToEnvironment(contributors, activationContext, importer.getLoadedLocations(),
-				importer.getOptionalLocations());
+				importer.getOptionalLocations());// 将配置文件属性加入environment
 	}
 
 	private ConfigDataEnvironmentContributors processInitial(ConfigDataEnvironmentContributors contributors,
-			ConfigDataImporter importer) {
+			ConfigDataImporter importer) {// BEFORE_PROFILE_ACTIVATION阶段
 		this.logger.trace("Processing initial config data environment contributors without activation context");
 		contributors = contributors.withProcessedImports(importer, null);
 		registerBootstrapBinder(contributors, null, DENY_INACTIVE_BINDING);
@@ -324,11 +324,11 @@ class ConfigDataEnvironment {
 
 	private void applyToEnvironment(ConfigDataEnvironmentContributors contributors,
 			ConfigDataActivationContext activationContext, Set<ConfigDataLocation> loadedLocations,
-			Set<ConfigDataLocation> optionalLocations) {
+			Set<ConfigDataLocation> optionalLocations) {// 将解析结果加入environment
 		checkForInvalidProperties(contributors);
 		checkMandatoryLocations(contributors, activationContext, loadedLocations, optionalLocations);
 		MutablePropertySources propertySources = this.environment.getPropertySources();
-		applyContributor(contributors, activationContext, propertySources);
+		applyContributor(contributors, activationContext, propertySources);// 将解析结果加入propertySources，他是environment内的变量
 		DefaultPropertiesPropertySource.moveToEnd(propertySources);
 		Profiles profiles = activationContext.getProfiles();
 		this.logger.trace(LogMessage.format("Setting default profiles: %s", profiles.getDefault()));
@@ -339,7 +339,7 @@ class ConfigDataEnvironment {
 	}
 
 	private void applyContributor(ConfigDataEnvironmentContributors contributors,
-			ConfigDataActivationContext activationContext, MutablePropertySources propertySources) {
+			ConfigDataActivationContext activationContext, MutablePropertySources propertySources) {// 应用加载出来的配置（contributors内，它实现了Iterable接口）将propertySource放入propertySources中
 		this.logger.trace("Applying config data environment contributions");
 		for (ConfigDataEnvironmentContributor contributor : contributors) {
 			PropertySource<?> propertySource = contributor.getPropertySource();
@@ -351,9 +351,9 @@ class ConfigDataEnvironment {
 				else {
 					this.logger
 						.trace(LogMessage.format("Adding imported property source '%s'", propertySource.getName()));
-					propertySources.addLast(propertySource);
+					propertySources.addLast(propertySource);// 将propertySource加入propertySources
 					this.environmentUpdateListener.onPropertySourceAdded(propertySource, contributor.getLocation(),
-							contributor.getResource());
+							contributor.getResource());// 目前这个方法没有被实现
 				}
 			}
 		}

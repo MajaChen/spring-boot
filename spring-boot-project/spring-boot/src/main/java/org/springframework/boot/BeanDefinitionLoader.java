@@ -58,13 +58,13 @@ import org.springframework.util.StringUtils;
  * @author Sebastien Deleuze
  * @see #setBeanNameGenerator(BeanNameGenerator)
  */
-class BeanDefinitionLoader {
+class BeanDefinitionLoader {// 属于Spring-boot框架，但是AnnotatedBeanDefinitionReader属于Spring框架
 
 	private static final Pattern GROOVY_CLOSURE_PATTERN = Pattern.compile(".*\\$_.*closure.*");
 
 	private final Object[] sources;
 
-	private final AnnotatedBeanDefinitionReader annotatedReader;
+	private final AnnotatedBeanDefinitionReader annotatedReader;// 用于注册通过注解定义的Bean
 
 	private final AbstractBeanDefinitionReader xmlReader;
 
@@ -125,14 +125,14 @@ class BeanDefinitionLoader {
 	 * Load the sources into the reader.
 	 */
 	void load() {
-		for (Object source : this.sources) {
+		for (Object source : this.sources) {// 一般情况下只有主类一个类型
 			load(source);
 		}
 	}
 
 	private void load(Object source) {
 		Assert.notNull(source, "Source must not be null");
-		if (source instanceof Class<?> clazz) {
+		if (source instanceof Class<?> clazz) {// 匹配到这个分支
 			load(clazz);
 			return;
 		}
@@ -158,7 +158,7 @@ class BeanDefinitionLoader {
 			((GroovyBeanDefinitionReader) this.groovyReader).beans(loader.getBeans());
 		}
 		if (isEligible(source)) {
-			this.annotatedReader.register(source);
+			this.annotatedReader.register(source);// 将主类注册到annotatedReader中 - 为主类创建BeanDefinition，并加入Spring框架的BeanDefinition Map
 		}
 	}
 

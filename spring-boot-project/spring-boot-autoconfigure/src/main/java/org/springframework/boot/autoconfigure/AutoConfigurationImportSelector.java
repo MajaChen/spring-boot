@@ -123,11 +123,11 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 			return EMPTY_ENTRY;
 		}
 		AnnotationAttributes attributes = getAttributes(annotationMetadata);
-		List<String> configurations = getCandidateConfigurations(annotationMetadata, attributes);
-		configurations = removeDuplicates(configurations);
+		List<String> configurations = getCandidateConfigurations(annotationMetadata, attributes);// 从xxx.imports获取class name，两个入参并没有用到
+		configurations = removeDuplicates(configurations);// 去重，意义不大
 		Set<String> exclusions = getExclusions(annotationMetadata, attributes);
 		checkExcludedClasses(configurations, exclusions);
-		configurations.removeAll(exclusions);
+		configurations.removeAll(exclusions);// 根据过滤条件去除全部无用的class name，意义不大
 		configurations = getConfigurationClassFilter().filter(configurations);
 		fireAutoConfigurationImportEvents(configurations, exclusions);
 		return new AutoConfigurationEntry(configurations, exclusions);
@@ -176,9 +176,9 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 	 * attributes}
 	 * @return a list of candidate configurations
 	 */
-	protected List<String> getCandidateConfigurations(AnnotationMetadata metadata, AnnotationAttributes attributes) {
+	protected List<String> getCandidateConfigurations(AnnotationMetadata metadata, AnnotationAttributes attributes) {// 从配置文件中获取class name，数量会很大
 		List<String> configurations = ImportCandidates.load(AutoConfiguration.class, getBeanClassLoader())
-			.getCandidates();
+			.getCandidates();// 获取class name
 		Assert.notEmpty(configurations,
 				"No auto configuration classes found in "
 						+ "META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports. If you "
@@ -363,6 +363,8 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 			String[] candidates = StringUtils.toStringArray(configurations);
 			boolean skipped = false;
 			for (AutoConfigurationImportFilter filter : this.filters) {
+				// match数组表示特定的configuration是否匹配
+				// 三个filter之间取交集，只有都满足才会被保留
 				boolean[] match = filter.match(candidates, this.autoConfigurationMetadata);
 				for (int i = 0; i < match.length; i++) {
 					if (!match[i]) {
@@ -421,13 +423,13 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 		}
 
 		@Override
-		public void process(AnnotationMetadata annotationMetadata, DeferredImportSelector deferredImportSelector) {
+		public void process(AnnotationMetadata annotationMetadata, DeferredImportSelector deferredImportSelector) {// 承接SpringFramework，获取BeanDefinition并填充到entries中
 			Assert.state(deferredImportSelector instanceof AutoConfigurationImportSelector,
 					() -> String.format("Only %s implementations are supported, got %s",
 							AutoConfigurationImportSelector.class.getSimpleName(),
 							deferredImportSelector.getClass().getName()));
 			AutoConfigurationEntry autoConfigurationEntry = ((AutoConfigurationImportSelector) deferredImportSelector)
-				.getAutoConfigurationEntry(annotationMetadata);
+				.getAutoConfigurationEntry(annotationMetadata);// 获取BeanDefinition
 			this.autoConfigurationEntries.add(autoConfigurationEntry);
 			for (String importClassName : autoConfigurationEntry.getConfigurations()) {
 				this.entries.putIfAbsent(importClassName, annotationMetadata);

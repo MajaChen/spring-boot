@@ -80,11 +80,11 @@ class ConfigDataImporter {
 	 */
 	Map<ConfigDataResolutionResult, ConfigData> resolveAndLoad(ConfigDataActivationContext activationContext,
 			ConfigDataLocationResolverContext locationResolverContext, ConfigDataLoaderContext loaderContext,
-			List<ConfigDataLocation> locations) {
+			List<ConfigDataLocation> locations) {// 解析location路径下的配置文件
 		try {
 			Profiles profiles = (activationContext != null) ? activationContext.getProfiles() : null;
-			List<ConfigDataResolutionResult> resolved = resolve(locationResolverContext, profiles, locations);
-			return load(loaderContext, resolved);
+			List<ConfigDataResolutionResult> resolved = resolve(locationResolverContext, profiles, locations);// 具体的加载逻辑
+			return load(loaderContext, resolved);// 加载
 		}
 		catch (IOException ex) {
 			throw new IllegalStateException("IO error on loading imports from " + locations, ex);

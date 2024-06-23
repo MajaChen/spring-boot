@@ -89,9 +89,9 @@ public class EnvironmentPostProcessorApplicationListener implements SmartApplica
 	}
 
 	@Override
-	public void onApplicationEvent(ApplicationEvent event) {
+	public void onApplicationEvent(ApplicationEvent event) {// 收到通知，根据通知类型做出不同的反应
 		if (event instanceof ApplicationEnvironmentPreparedEvent environmentPreparedEvent) {
-			onApplicationEnvironmentPreparedEvent(environmentPreparedEvent);
+			onApplicationEnvironmentPreparedEvent(environmentPreparedEvent);// 对EnvironmentPreparedEvent事件做出反应
 		}
 		if (event instanceof ApplicationPreparedEvent) {
 			onApplicationPreparedEvent();
@@ -101,7 +101,7 @@ public class EnvironmentPostProcessorApplicationListener implements SmartApplica
 		}
 	}
 
-	private void onApplicationEnvironmentPreparedEvent(ApplicationEnvironmentPreparedEvent event) {
+	private void onApplicationEnvironmentPreparedEvent(ApplicationEnvironmentPreparedEvent event) {// 对EnvironmentPreparedEvent事件做出反应
 		ConfigurableEnvironment environment = event.getEnvironment();
 		SpringApplication application = event.getSpringApplication();
 		for (EnvironmentPostProcessor postProcessor : getEnvironmentPostProcessors(application.getResourceLoader(),

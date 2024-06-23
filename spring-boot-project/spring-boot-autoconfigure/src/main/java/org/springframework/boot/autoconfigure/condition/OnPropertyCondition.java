@@ -43,7 +43,7 @@ import org.springframework.util.StringUtils;
  * @see ConditionalOnProperty
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 40)
-class OnPropertyCondition extends SpringBootCondition {
+class OnPropertyCondition extends SpringBootCondition {// 只在加载BeanDefinition的时候判断给定的类是否符合条件
 
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
@@ -55,7 +55,7 @@ class OnPropertyCondition extends SpringBootCondition {
 		List<ConditionMessage> noMatch = new ArrayList<>();
 		List<ConditionMessage> match = new ArrayList<>();
 		for (AnnotationAttributes annotationAttributes : allAnnotationAttributes) {
-			ConditionOutcome outcome = determineOutcome(annotationAttributes, context.getEnvironment());
+			ConditionOutcome outcome = determineOutcome(annotationAttributes, context.getEnvironment());// 真正的判断逻辑，配置文件存于environment
 			(outcome.isMatch() ? match : noMatch).add(outcome.getConditionMessage());
 		}
 		if (!noMatch.isEmpty()) {
@@ -64,11 +64,11 @@ class OnPropertyCondition extends SpringBootCondition {
 		return ConditionOutcome.match(ConditionMessage.of(match));
 	}
 
-	private ConditionOutcome determineOutcome(AnnotationAttributes annotationAttributes, PropertyResolver resolver) {
+	private ConditionOutcome determineOutcome(AnnotationAttributes annotationAttributes, PropertyResolver resolver) {// 判断注解中定义的属性在配置文件中是否存在
 		Spec spec = new Spec(annotationAttributes);
 		List<String> missingProperties = new ArrayList<>();
 		List<String> nonMatchingProperties = new ArrayList<>();
-		spec.collectProperties(resolver, missingProperties, nonMatchingProperties);
+		spec.collectProperties(resolver, missingProperties, nonMatchingProperties);// 从配置文件中查找属性
 		if (!missingProperties.isEmpty()) {
 			return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnProperty.class, spec)
 				.didNotFind("property", "properties")

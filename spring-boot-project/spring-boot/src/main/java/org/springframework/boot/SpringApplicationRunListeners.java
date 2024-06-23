@@ -59,9 +59,9 @@ class SpringApplicationRunListeners {
 				});
 	}
 
-	void environmentPrepared(ConfigurableBootstrapContext bootstrapContext, ConfigurableEnvironment environment) {
+	void environmentPrepared(ConfigurableBootstrapContext bootstrapContext, ConfigurableEnvironment environment) {// environment就绪通知
 		doWithListeners("spring.boot.application.environment-prepared",
-				(listener) -> listener.environmentPrepared(bootstrapContext, environment));
+				(listener) -> listener.environmentPrepared(bootstrapContext, environment));// doWithListeners是发出通知，environmentPrepared是通知的动作
 	}
 
 	void contextPrepared(ConfigurableApplicationContext context) {
@@ -115,7 +115,7 @@ class SpringApplicationRunListeners {
 	private void doWithListeners(String stepName, Consumer<SpringApplicationRunListener> listenerAction,
 			Consumer<StartupStep> stepAction) {
 		StartupStep step = this.applicationStartup.start(stepName);
-		this.listeners.forEach(listenerAction);
+		this.listeners.forEach(listenerAction);// listeners存储了所有的监听者
 		if (stepAction != null) {
 			stepAction.accept(step);
 		}

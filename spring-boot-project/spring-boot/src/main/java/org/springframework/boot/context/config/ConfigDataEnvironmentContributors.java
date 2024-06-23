@@ -49,7 +49,7 @@ import org.springframework.util.ObjectUtils;
  * @author Phillip Webb
  * @author Madhura Bhave
  */
-class ConfigDataEnvironmentContributors implements Iterable<ConfigDataEnvironmentContributor> {
+class ConfigDataEnvironmentContributors implements Iterable<ConfigDataEnvironmentContributor> {// 是ConfigDataEnvironmentContributor的树状集合
 
 	private static final Predicate<ConfigDataEnvironmentContributor> NO_CONTRIBUTOR_FILTER = (contributor) -> true;
 
@@ -89,13 +89,13 @@ class ConfigDataEnvironmentContributors implements Iterable<ConfigDataEnvironmen
 	 * imports have been processed
 	 */
 	ConfigDataEnvironmentContributors withProcessedImports(ConfigDataImporter importer,
-			ConfigDataActivationContext activationContext) {
+			ConfigDataActivationContext activationContext) {// 实际的读取逻辑，读取到的值会存入ConfigDataEnvironmentContributors
 		ImportPhase importPhase = ImportPhase.get(activationContext);
 		this.logger.trace(LogMessage.format("Processing imports for phase %s. %s", importPhase,
 				(activationContext != null) ? activationContext : "no activation context"));
 		ConfigDataEnvironmentContributors result = this;
 		int processed = 0;
-		while (true) {
+		while (true) {// 从多个路径下加载，有不同的优先级顺序
 			ConfigDataEnvironmentContributor contributor = getNextToProcess(result, activationContext, importPhase);
 			if (contributor == null) {
 				this.logger.trace(LogMessage.format("Processed imports for of %d contributors", processed));
@@ -110,10 +110,10 @@ class ConfigDataEnvironmentContributors implements Iterable<ConfigDataEnvironmen
 			ConfigDataLocationResolverContext locationResolverContext = new ContributorConfigDataLocationResolverContext(
 					result, contributor, activationContext);
 			ConfigDataLoaderContext loaderContext = new ContributorDataLoaderContext(this);
-			List<ConfigDataLocation> imports = contributor.getImports();
+			List<ConfigDataLocation> imports = contributor.getImports();// 解析加载路径
 			this.logger.trace(LogMessage.format("Processing imports %s", imports));
 			Map<ConfigDataResolutionResult, ConfigData> imported = importer.resolveAndLoad(activationContext,
-					locationResolverContext, loaderContext, imports);
+					locationResolverContext, loaderContext, imports);// 解析并加载
 			this.logger.trace(LogMessage.of(() -> getImportedMessage(imported.keySet())));
 			ConfigDataEnvironmentContributor contributorAndChildren = contributor.withChildren(importPhase,
 					asContributors(imported));

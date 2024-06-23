@@ -93,7 +93,7 @@ import org.springframework.core.env.Environment;
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Documented
 @Conditional(OnPropertyCondition.class)
-public @interface ConditionalOnProperty {
+public @interface ConditionalOnProperty {// 要求配置文件中的属性符合要求，比如某个属性得是某个值，或者某个属性必须存在
 
 	/**
 	 * Alias for {@link #name()}.

@@ -77,7 +77,7 @@ public final class ImportCandidates implements Iterable<String> {
 	 * @param classLoader class loader to use for loading
 	 * @return list of names of annotated classes
 	 */
-	public static ImportCandidates load(Class<?> annotation, ClassLoader classLoader) {
+	public static ImportCandidates load(Class<?> annotation, ClassLoader classLoader) {// 加载META-INF/spring/AutoConfiguration.imports文件，读取class name
 		Assert.notNull(annotation, "'annotation' must not be null");
 		ClassLoader classLoaderToUse = decideClassloader(classLoader);
 		String location = String.format(LOCATION, annotation.getName());
@@ -106,7 +106,7 @@ public final class ImportCandidates implements Iterable<String> {
 		}
 	}
 
-	private static List<String> readCandidateConfigurations(URL url) {
+	private static List<String> readCandidateConfigurations(URL url) {// 从url指向的文件中读取配置
 		try (BufferedReader reader = new BufferedReader(
 				new InputStreamReader(new UrlResource(url).getInputStream(), StandardCharsets.UTF_8))) {
 			List<String> candidates = new ArrayList<>();

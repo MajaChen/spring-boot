@@ -77,8 +77,8 @@ class EventPublishingRunListener implements SpringApplicationRunListener, Ordere
 
 	@Override
 	public void environmentPrepared(ConfigurableBootstrapContext bootstrapContext,
-			ConfigurableEnvironment environment) {
-		multicastInitialEvent(
+			ConfigurableEnvironment environment) {// environment就绪通知对应的动作
+		multicastInitialEvent(// 多播
 				new ApplicationEnvironmentPreparedEvent(bootstrapContext, this.application, this.args, environment));
 	}
 
@@ -133,7 +133,7 @@ class EventPublishingRunListener implements SpringApplicationRunListener, Ordere
 
 	private void multicastInitialEvent(ApplicationEvent event) {
 		refreshApplicationListeners();
-		this.initialMulticaster.multicastEvent(event);
+		this.initialMulticaster.multicastEvent(event);// 发出多播
 	}
 
 	private void refreshApplicationListeners() {

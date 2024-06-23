@@ -24,7 +24,7 @@ import java.util.Set;
  * @author Phillip Webb
  * @since 1.5.0
  */
-public interface AutoConfigurationMetadata {
+public interface AutoConfigurationMetadata {// 自动配置的元数据信息
 
 	/**
 	 * Return {@code true} if the specified class name was processed by the annotation

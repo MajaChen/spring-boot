@@ -40,7 +40,7 @@ import org.springframework.util.StringUtils;
  * @see ConditionalOnMissingClass
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)
-class OnClassCondition extends FilteringSpringBootCondition {
+class OnClassCondition extends FilteringSpringBootCondition {// 检查给定的class是否存在
 
 	@Override
 	protected final ConditionOutcome[] getOutcomes(String[] autoConfigurationClasses,
@@ -48,7 +48,7 @@ class OnClassCondition extends FilteringSpringBootCondition {
 		// Split the work and perform half in a background thread if more than one
 		// processor is available. Using a single additional thread seems to offer the
 		// best performance. More threads make things worse.
-		if (autoConfigurationClasses.length > 1 && Runtime.getRuntime().availableProcessors() > 1) {
+		if (autoConfigurationClasses.length > 1 && Runtime.getRuntime().availableProcessors() > 1) {// 这里会开启一个额外的解析线程，最终会走到getOutcomes(189)
 			return resolveOutcomesThreaded(autoConfigurationClasses, autoConfigurationMetadata);
 		}
 		else {
@@ -80,6 +80,11 @@ class OnClassCondition extends FilteringSpringBootCondition {
 		return new ThreadedOutcomesResolver(outcomesResolver);
 	}
 
+	/*
+	* 在加载BeanDefinition的时候再次判断给定的Bean是否符合条件
+	* 对应的注解：ConditionalOnClass、ConditionalOnMissingClass
+	* 判断规则是：给定类路径下存在/不存在对应的类
+	* */
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
 		ClassLoader classLoader = context.getClassLoader();
@@ -187,21 +192,21 @@ class OnClassCondition extends FilteringSpringBootCondition {
 		}
 
 		private ConditionOutcome[] getOutcomes(String[] autoConfigurationClasses, int start, int end,
-				AutoConfigurationMetadata autoConfigurationMetadata) {
+				AutoConfigurationMetadata autoConfigurationMetadata) {// 判断给定的autoConfigurationClasses是否匹配条件
 			ConditionOutcome[] outcomes = new ConditionOutcome[end - start];
 			for (int i = start; i < end; i++) {
 				String autoConfigurationClass = autoConfigurationClasses[i];
 				if (autoConfigurationClass != null) {
-					String candidates = autoConfigurationMetadata.get(autoConfigurationClass, "ConditionalOnClass");
+					String candidates = autoConfigurationMetadata.get(autoConfigurationClass, "ConditionalOnClass");// k是autoConfigurationClass.ConditionalOnClass，从autoConfigurationMetadata中加载
 					if (candidates != null) {
-						outcomes[i - start] = getOutcome(candidates);
+						outcomes[i - start] = getOutcome(candidates);// 判断ConditionalOnClass对应的类是否存在
 					}
 				}
 			}
 			return outcomes;
 		}
 
-		private ConditionOutcome getOutcome(String candidates) {
+		private ConditionOutcome getOutcome(String candidates) {// 判断给定的类是否满足条件，判断逻辑是candidates对应的类是否存在于类路径下
 			try {
 				if (!candidates.contains(",")) {
 					return getOutcome(candidates, this.beanClassLoader);

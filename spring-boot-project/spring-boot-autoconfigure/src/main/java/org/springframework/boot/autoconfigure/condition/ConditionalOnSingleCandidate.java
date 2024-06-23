@@ -46,7 +46,7 @@ import org.springframework.context.annotation.Conditional;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Conditional(OnBeanCondition.class)
-public @interface ConditionalOnSingleCandidate {
+public @interface ConditionalOnSingleCandidate {// 要求指定的Bean存在且是单例的，指定条件见下
 
 	/**
 	 * The class type of bean that should be checked. The condition matches if a bean of
